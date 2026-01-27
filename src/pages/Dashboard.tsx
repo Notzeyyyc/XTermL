@@ -1,5 +1,5 @@
 import { Button } from "@/components/ui/button";
-import { motion, useScroll, useTransform } from "framer-motion";
+import { motion } from "framer-motion";
 import {
   Terminal,
   FolderOpen,
@@ -8,11 +8,8 @@ import {
   Cpu,
   Activity,
   HardDrive,
-  MoreVertical,
   Play,
   Clock,
-  Laptop,
-  Smartphone,
   ChevronRight,
   Zap
 } from "lucide-react";
