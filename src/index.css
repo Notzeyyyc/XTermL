@@ -1,0 +1,31 @@
+@import "tailwindcss";
+
+@layer base {
+    html {
+        -webkit-tap-highlight-color: transparent;
+    }
+
+    body {
+        user-select: none;
+        -webkit-user-select: none;
+    }
+
+    /* Allow text selection in inputs */
+    input,
+    textarea,
+    [contenteditable] {
+        user-select: text;
+        -webkit-user-select: text;
+    }
+}
+
+@layer base {
+    :root {
+        color-scheme: dark;
+    }
+
+    body {
+        @apply bg-zinc-950 text-zinc-100 antialiased;
+        margin: 0;
+    }
+}

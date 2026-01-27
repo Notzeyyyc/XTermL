@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">XTermL</string>
+    <string name="title_activity_main">XTermL</string>
+    <string name="package_name">com.xterml.app</string>
+    <string name="custom_url_scheme">com.xterml.app</string>
+</resources>
