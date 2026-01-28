@@ -36,7 +36,7 @@ export default function ProotSetup() {
 
     try {
       log("Bridge detected. Initializing session...");
-      const checkRes = await fetch('http://localhost:3001/api/exec', {
+      const checkRes = await fetch('http://127.0.0.1:3001/api/exec', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ command: 'pkg install proot-distro -y' })
@@ -47,7 +47,7 @@ export default function ProotSetup() {
       setProgress(20);
       log(`Updating proot-distro repositories...`);
       
-      const installRes = await fetch('http://localhost:3001/api/exec', {
+      const installRes = await fetch('http://127.0.0.1:3001/api/exec', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ command: `proot-distro install ${distro.id}` })

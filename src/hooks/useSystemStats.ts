@@ -31,58 +31,66 @@ export const useSystemStats = () => {
 
   useEffect(() => {
     const isNative = Capacitor.isNativePlatform();
-    const platform = Capacitor.getPlatform() === 'android' ? 'android' : 'windows';
+    const platform: 'android' | 'windows' = Capacitor.getPlatform() === 'android' ? 'android' : 'windows';
 
     const fetchStats = async () => {
-      const hosts = ['127.0.0.1', 'localhost'];
+      let finalStats = { ...stats, isNative, platform };
       let bridgeFound = false;
 
       try {
+        // 1. Get Native info if available
         if (isNative) {
-          const info = await CommunityDevice.getInfo();
-          const totalDiskGB = info.diskTotal ? info.diskTotal / (1024 ** 3) : 64;
-          const freeDiskGB = info.diskFree ? info.diskFree / (1024 ** 3) : 32;
-          const diskUsagePerc = Math.round(((totalDiskGB - freeDiskGB) / totalDiskGB) * 100);
-
-          setStats(prev => ({ ...prev, diskUsage: diskUsagePerc, isNative: true, isMock: !bridgeFound, platform: 'android' }));
-        }
-
-        for (const host of hosts) {
           try {
-            const response = await fetch(`http://${host}:3001/api/stats`, {
-              signal: AbortSignal.timeout(1500) 
-            });
-            
-            if (response.ok) {
-              const bridgeData = await response.json();
-              setStats(prev => ({ ...prev, ...bridgeData, isMock: false, isNative, platform }));
-              bridgeFound = true;
-              break; 
-            }
-          } catch (e) {
-            // Host failed, try next
-          }
+            const info = await CommunityDevice.getInfo();
+            const totalDiskGB = info.diskTotal ? info.diskTotal / (1024 ** 3) : 64;
+            const freeDiskGB = info.diskFree ? info.diskFree / (1024 ** 3) : 32;
+            finalStats.diskUsage = Math.round(((totalDiskGB - freeDiskGB) / totalDiskGB) * 100);
+            finalStats.isNative = true;
+          } catch(e) {}
         }
-      } catch (error) { }
 
-      // 3. Fallback / Mock
-      setStats(prev => {
-        const mockCpu = Math.floor(Math.random() * 20) + (platform === 'android' ? 5 : 2);
-        const ramT = platform === 'android' ? 8 : 16;
-        const ramU = (Math.random() * (ramT * 0.2) + (ramT * 0.1)).toFixed(1);
-        const ramP = Math.round((parseFloat(ramU) / ramT) * 100);
+        // 2. Try Bridge (127.0.0.1 is standard for Android)
+        try {
+          const response = await fetch(`http://127.0.0.1:3001/api/stats`, {
+            signal: AbortSignal.timeout(1200) 
+          });
+          
+          if (response.ok) {
+            const bridgeData = await response.json();
+            finalStats = { ...finalStats, ...bridgeData, isMock: false };
+            bridgeFound = true;
+          }
+        } catch (e) {
+          // If 127.0.0.1 fails, try localhost as backup
+          try {
+             const resp = await fetch(`http://localhost:3001/api/stats`, { signal: AbortSignal.timeout(1000) });
+             if (resp.ok) {
+                const data = await resp.json();
+                finalStats = { ...finalStats, ...data, isMock: false };
+                bridgeFound = true;
+             }
+          } catch(e2) {}
+        }
 
-        return {
-          ...prev,
-          cpuUsage: mockCpu,
-          ramUsed: `${ramU}G`,
-          ramTotal: `${ramT}G`,
-          ramPercentage: ramP,
-          diskUsage: prev.diskUsage || (platform === 'android' ? 65 : 42),
-          platform,
-          isMock: prev.isNative ? false : true,
-        };
-      });
+        // 3. Fallback if no bridge found
+        if (!bridgeFound) {
+          const mockCpu = Math.floor(Math.random() * 20) + (platform === 'android' ? 5 : 2);
+          const ramT = platform === 'android' ? 8 : 16;
+          const ramU = (Math.random() * (ramT * 0.2) + (ramT * 0.1)).toFixed(1);
+          const ramP = Math.round((parseFloat(ramU) / ramT) * 100);
+          
+          finalStats.cpuUsage = mockCpu;
+          finalStats.ramUsed = `${ramU}G`;
+          finalStats.ramTotal = `${ramT}G`;
+          finalStats.ramPercentage = ramP;
+          finalStats.isMock = true;
+          if (!finalStats.diskUsage) finalStats.diskUsage = (platform === 'android' ? 65 : 42);
+        }
+
+        setStats(finalStats);
+      } catch (error) { 
+        setStats(prev => ({ ...prev, isMock: true }));
+      }
     };
 
     fetchStats();
