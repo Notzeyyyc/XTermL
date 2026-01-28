@@ -67,6 +67,7 @@ export default function TerminalPage() {
 
     const connectBridge = () => {
       cleanup();
+      term.writeln('\x1b[33m[System] Connecting to 127.0.0.1:3001...\x1b[0m');
       
       const ws = new WebSocket('ws://127.0.0.1:3001');
       socketRef.current = ws;
@@ -74,11 +75,16 @@ export default function TerminalPage() {
       ws.onopen = () => {
         setIsConnected(true);
         term.clear();
-        term.writeln('\x1b[1;32mXTermL Bridge: Connected Successfully\x1b[0m');
+        term.writeln('\x1b[1;32mXTermL Bridge: Online\x1b[0m');
         
         if (distroId) {
           term.writeln(`\x1b[1;34mLogging into ${selectedDistro}...\x1b[0m`);
-          ws.send(`proot-distro login ${distroId}\r`);
+          // Small delay before login to let the remote shell (login) stabilize
+          setTimeout(() => {
+            if (ws.readyState === WebSocket.OPEN) {
+              ws.send(`proot-distro login ${distroId}\r`);
+            }
+          }, 800);
         }
 
         onDataDisposable.current = term.onData(data => {
@@ -88,15 +94,18 @@ export default function TerminalPage() {
 
       ws.onmessage = (event) => term.write(event.data);
 
-      ws.onclose = () => {
+      ws.onclose = (e) => {
         setIsConnected(false);
         if (onDataDisposable.current) onDataDisposable.current.dispose();
         
-        term.writeln('\r\n\x1b[1;31mConnection Lost. Reconnecting in 3s...\x1b[0m');
+        term.writeln(`\r\n\x1b[31m[System] Connection Lost (Code: ${e.code}). Reconnecting...\x1b[0m`);
         setTimeout(connectBridge, 3000);
       };
 
-      ws.onerror = () => ws.close();
+      ws.onerror = (err) => {
+        console.error('WS Error:', err);
+        ws.close();
+      };
     };
 
     connectBridge();
@@ -129,7 +138,7 @@ export default function TerminalPage() {
                 <Wifi size={10} /> Live
               </div>
             ) : (
-              <div className="flex items-center gap-1.5 px-2 py-1 rounded-lg bg-zinc-900 border border-white/5 text-[9px] font-black text-zinc-500 tracking-tighter uppercase animate-pulse">
+              <div className="flex items-center gap-1.5 px-2 py-1 rounded-lg bg-red-500/10 border border-red-500/20 text-[9px] font-black text-red-500 tracking-tighter uppercase animate-pulse">
                 <WifiOff size={10} /> Syncing
               </div>
             )}
