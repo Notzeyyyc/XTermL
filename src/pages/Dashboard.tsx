@@ -231,7 +231,10 @@ export default function Dashboard() {
                   Direct access to system bash, package management, and remote SSH administration.
                 </p>
               </div>
-              <Button className="px-10 py-7 bg-white text-black hover:bg-zinc-200 text-lg font-black rounded-2xl shadow-2xl shadow-white/5 transition-all group-hover:scale-105 active:scale-95">
+              <Button 
+                onClick={() => navigate('/terminal')}
+                className="px-10 py-7 bg-white text-black hover:bg-zinc-200 text-lg font-black rounded-2xl shadow-2xl shadow-white/5 transition-all group-hover:scale-105 active:scale-95"
+              >
                 <Play className="h-5 w-5 mr-3 fill-current" /> Initialize Shell
               </Button>
             </div>

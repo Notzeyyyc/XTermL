@@ -5,6 +5,7 @@ import GeneralSetup from "@/pages/setup/General";
 import ProotSetup from "@/pages/setup/Proot";
 import ChrootSetup from "@/pages/setup/Chroot";
 import Dashboard from "@/pages/Dashboard";
+import Terminal from "@/pages/Terminal";
 
 function App() {
   return (
@@ -16,6 +17,7 @@ function App() {
         <Route path="/setup/proot" element={<ProotSetup />} />
         <Route path="/setup/chroot" element={<ChrootSetup />} />
         <Route path="/dashboard" element={<Dashboard />} />
+        <Route path="/terminal" element={<Terminal />} />
       </Routes>
     </Router>
   );
