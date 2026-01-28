@@ -8,6 +8,7 @@ import Terminal from "@/pages/Terminal";
 import Sync from "@/pages/Sync";
 import Explorer from "@/pages/Explorer";
 import Packages from "@/pages/Packages";
+import Editor from "@/pages/Editor";
 
 function App() {
   return (
@@ -22,6 +23,7 @@ function App() {
         <Route path="/terminal" element={<Terminal />} />
         <Route path="/explorer" element={<Explorer />} />
         <Route path="/packages" element={<Packages />} />
+        <Route path="/editor" element={<Editor />} />
       </Routes>
     </Router>
   );

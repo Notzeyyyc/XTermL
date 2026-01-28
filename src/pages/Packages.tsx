@@ -78,7 +78,7 @@ export default function Packages() {
             placeholder="Search installed packages..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="w-full bg-zinc-900 border border-white/5 rounded-2xl py-3 pl-pl-11 pr-4 text-sm focus:outline-hidden focus:border-orange-500/50 transition-all font-medium"
+            className="w-full bg-zinc-900 border border-white/5 rounded-2xl py-3 pl-11 pr-4 text-sm focus:outline-hidden focus:border-orange-500/50 transition-all font-medium"
           />
         </div>
       </header>

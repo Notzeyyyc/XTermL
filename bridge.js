@@ -98,23 +98,54 @@ const server = http.createServer(async (req, res) => {
     });
   }
 
-  // 4. EXEC COMMAND
-  else if (url.pathname === '/api/exec' && req.method === 'POST') {
+  // 4. FILE OPERATIONS (Rename, Delete, Unzip)
+  else if (url.pathname === '/api/files/op' && req.method === 'POST') {
     let body = '';
     req.on('data', chunk => body += chunk);
     req.on('end', () => {
-      const { command } = JSON.parse(body);
-      exec(command, (err, stdout, stderr) => {
-        res.writeHead(200);
-        res.end(JSON.stringify({
-          success: !err,
-          stdout: stdout,
-          stderr: stderr,
-          error: err ? err.message : null
-        }));
-      });
+      const { op, path: targetPath, newName, destination } = JSON.parse(body);
+      
+      if (op === 'rename') {
+        const newPath = path.join(path.dirname(targetPath), newName);
+        fs.rename(targetPath, newPath, (err) => {
+          res.writeHead(err ? 500 : 200);
+          res.end(JSON.stringify({ success: !err, error: err?.message }));
+        });
+      } 
+      else if (op === 'delete') {
+        fs.rm(targetPath, { recursive: true, force: true }, (err) => {
+          res.writeHead(err ? 500 : 200);
+          res.end(JSON.stringify({ success: !err, error: err?.message }));
+        });
+      }
+      else if (op === 'unzip') {
+        // Simple unzip using shell command for efficiency in Termux
+        exec(`unzip -o "${targetPath}" -d "${path.dirname(targetPath)}"`, (err) => {
+          res.writeHead(err ? 500 : 200);
+          res.end(JSON.stringify({ success: !err, error: err?.message }));
+        });
+      }
+      else if (op === 'write') {
+        const { content } = JSON.parse(body);
+        fs.writeFile(targetPath, content, (err) => {
+          res.writeHead(err ? 500 : 200);
+          res.end(JSON.stringify({ success: !err, error: err?.message }));
+        });
+      }
+      else if (op === 'read') {
+        fs.readFile(targetPath, 'utf8', (err, data) => {
+          if (err) {
+            res.writeHead(500);
+            return res.end(JSON.stringify({ error: err.message }));
+          }
+          res.writeHead(200);
+          res.end(JSON.stringify({ content: data }));
+        });
+      }
     });
   }
+
+  // 5. EXEC COMMAND
   else {
     res.writeHead(404);
     res.end(JSON.stringify({ error: 'Not Found' }));
