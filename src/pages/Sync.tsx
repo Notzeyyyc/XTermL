@@ -15,7 +15,7 @@ export default function SyncPage() {
 
   const addLog = (msg: string) => setLog(prev => [...prev.slice(-8), msg]);
 
-  const termuxCommand = `curl -L https://raw.githubusercontent.com/Notzeyyyc/XTermL/main/bridge.js -o bridge.js && pkg install nodejs -y && node bridge.js`;
+  const termuxCommand = `pkg install nodejs -y && mkdir -p ~/.xterml && cd ~/.xterml && curl -L https://raw.githubusercontent.com/Notzeyyyc/XTermL/main/bridge.js -o bridge.js && ( [ -d node_modules/ws ] || npm install ws ) && node bridge.js`;
 
   const copyCommand = () => {
     navigator.clipboard.writeText(termuxCommand);
