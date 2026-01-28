@@ -54,7 +54,7 @@ export const useSystemStats = () => {
         }
 
         // 2. Try Local Bridge (Useful for Termux integration)
-        const response = await fetch('http://localhost:3001/api/stats', {
+        const response = await fetch('http://127.0.0.1:3001/api/stats', {
           signal: AbortSignal.timeout(800) 
         });
         

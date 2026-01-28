@@ -26,7 +26,7 @@ export default function Explorer() {
   const fetchFiles = async (path: string) => {
     setLoading(true);
     try {
-      const res = await fetch(`http://localhost:3001/api/files?path=${encodeURIComponent(path)}`);
+      const res = await fetch(`http://127.0.0.1:3001/api/files?path=${encodeURIComponent(path)}`);
       if (res.ok) {
         const data = await res.json();
         setFiles(data.sort((a: any, b: any) => (b.isDir ? 1 : -1) - (a.isDir ? 1 : -1)));

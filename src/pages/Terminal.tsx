@@ -63,7 +63,7 @@ export default function TerminalPage() {
     const setupTerminalInteraction = () => {
       if (onDataDisposable.current) onDataDisposable.current.dispose();
 
-      const ws = new WebSocket('ws://localhost:3001');
+      const ws = new WebSocket('ws://127.0.0.1:3001');
       socketRef.current = ws;
 
       ws.onopen = () => {

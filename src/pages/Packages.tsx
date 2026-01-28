@@ -24,7 +24,7 @@ export default function Packages() {
   const fetchPackages = async () => {
     setLoading(true);
     try {
-      const res = await fetch(`http://localhost:3001/api/packages`);
+      const res = await fetch(`http://127.0.0.1:3001/api/packages`);
       if (res.ok) {
         const data = await res.json();
         setPkgs(data);
