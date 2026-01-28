@@ -12,14 +12,17 @@ export default function SyncPage() {
   const [progress, setProgress] = useState(0);
   const [log, setLog] = useState<string[]>([]);
   const [showCommand, setShowCommand] = useState(false);
+  const [isCopied, setIsCopied] = useState(false);
 
   const addLog = (msg: string) => setLog(prev => [...prev.slice(-8), msg]);
 
-  const termuxCommand = `pkg install nodejs -y && mkdir -p ~/.xterml && cd ~/.xterml && curl -L https://raw.githubusercontent.com/Notzeyyyc/XTermL/main/bridge.js -o bridge.js && ( [ -d node_modules/ws ] || npm install ws ) && node bridge.js`;
+  const termuxCommand = `pkg install nodejs -y && mkdir -p $HOME/.xterml && cd $HOME/.xterml && curl -L https://raw.githubusercontent.com/Notzeyyyc/XTermL/main/bridge.js -o bridge.js && ( [ -d node_modules/ws ] || npm install ws ) && node bridge.js`;
 
   const copyCommand = () => {
     navigator.clipboard.writeText(termuxCommand);
-    addLog("Command copied to clipboard!");
+    setIsCopied(true);
+    addLog("Installer command copied!");
+    setTimeout(() => setIsCopied(false), 2000);
   };
 
   const startSync = async () => {
@@ -141,9 +144,9 @@ export default function SyncPage() {
                     <Button 
                         onClick={() => setShowCommand(!showCommand)}
                         variant="ghost" 
-                        className="w-full h-12 bg-zinc-900/50 border border-white/5 text-zinc-300 font-bold rounded-xl flex items-center justify-center gap-2"
+                        className={`w-full h-12 border border-white/5 font-bold rounded-xl flex items-center justify-center gap-2 transition-all ${isCopied ? 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30' : 'bg-zinc-900/50 text-zinc-300'}`}
                     >
-                        <Terminal size={16} /> {showCommand ? 'Hide Command' : 'Termux Setup Command'}
+                        <Terminal size={16} /> {showCommand ? 'Hide Command' : 'Show Installer Command'}
                     </Button>
 
                     <AnimatePresence>
@@ -152,19 +155,23 @@ export default function SyncPage() {
                                 initial={{ opacity: 0, height: 0 }}
                                 animate={{ opacity: 1, height: 'auto' }}
                                 exit={{ opacity: 0, height: 0 }}
-                                className="space-y-2"
+                                className="space-y-4 pt-2"
                             >
-                                <div className="p-3 bg-black rounded-xl border border-white/5 font-mono text-[10px] break-all text-zinc-400 relative group">
+                                <div 
+                                  onClick={copyCommand}
+                                  className="p-4 bg-black rounded-2xl border border-white/5 font-mono text-[10px] break-all text-zinc-400 relative group cursor-pointer active:bg-zinc-900 transition-colors"
+                                >
                                     {termuxCommand}
-                                    <button 
-                                        onClick={copyCommand}
-                                        className="absolute right-2 top-2 p-1.5 bg-zinc-800 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity"
-                                    >
+                                    <div className="absolute right-3 top-3 p-2 bg-zinc-800 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity">
                                         <Copy size={12} />
-                                    </button>
+                                    </div>
+                                    <div className="mt-4 flex items-center justify-between border-t border-white/5 pt-3">
+                                      <span className="text-[9px] text-zinc-600 font-black uppercase tracking-widest">Click code to copy</span>
+                                      {isCopied && <span className="text-[9px] text-emerald-500 font-black uppercase tracking-widest">Copied!</span>}
+                                    </div>
                                 </div>
-                                <p className="text-[9px] text-zinc-600 font-bold uppercase tracking-widest text-center px-4">
-                                    Paste this in Termux to start the native bridge service.
+                                <p className="text-[9px] text-zinc-600 font-bold uppercase tracking-widest text-center px-4 leading-relaxed">
+                                    Paste this in Termux. It will auto-handle all modules (ws, etc) for you.
                                 </p>
                             </motion.div>
                         )}
