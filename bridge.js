@@ -5,49 +5,52 @@
  * 2. node bridge.js
  */
 import http from 'http';
-import { execSync } from 'child_process';
+import { exec, spawn } from 'child_process';
+import { WebSocketServer } from 'ws';
 
 const PORT = 3001;
 
+// Function to get system metrics
 const getStats = () => {
-  try {
-    // RAM Info (Termux/Linux)
-    const memInfo = execSync('free -m').toString().split('\n')[1].split(/\s+/);
-    const ramTotal = (parseInt(memInfo[1]) / 1024).toFixed(1);
-    const ramUsed = (parseInt(memInfo[2]) / 1024).toFixed(1);
-    const ramPercentage = Math.round((parseInt(memInfo[2]) / parseInt(memInfo[1])) * 100);
+  return new Promise((resolve) => {
+    try {
+      // RAM Info (Linux/Termux)
+      exec('free -m', (err, stdout) => {
+        if (err) return resolve({ error: 'Failed' });
+        const lines = stdout.split('\n');
+        const memLine = lines[1].split(/\s+/);
+        const ramTotal = (parseInt(memLine[1]) / 1024).toFixed(1);
+        const ramUsed = (parseInt(memLine[2]) / 1024).toFixed(1);
+        const ramPercentage = Math.round((parseInt(memLine[2]) / parseInt(memLine[1])) * 100);
 
-    // CPU Info (Simplest way)
-    const cpuUsage = Math.floor(Math.random() * 20) + 5; // Placeholder, real CPU needs complex parsing of /proc/stat
+        // Disk Info
+        exec('df -h /data', (err2, stdout2) => {
+          const diskLine = stdout2 ? stdout2.split('\n')[1].split(/\s+/) : [];
+          const diskUsage = diskLine[4] ? parseInt(diskLine[4].replace('%', '')) : 0;
 
-    // Disk Info
-    const diskInfo = execSync('df -h /data').toString().split('\n')[1].split(/\s+/);
-    const diskUsage = parseInt(diskInfo[4].replace('%', ''));
+          // CPU Info (Mock for now, needs /proc/stat parsing for real)
+          const cpuUsage = Math.floor(Math.random() * 20) + 5;
 
-    return {
-      cpuUsage,
-      ramUsed: `${ramUsed}G`,
-      ramTotal: `${ramTotal}G`,
-      ramPercentage,
-      diskUsage
-    };
-  } catch (e) {
-    // Fallback if commands fail (e.g. running on Windows)
-    return {
-      cpuUsage: 0,
-      ramUsed: "0G",
-      ramTotal: "0G",
-      ramPercentage: 0,
-      diskUsage: 0,
-      error: "Could not read system data"
-    };
-  }
+          resolve({
+            cpuUsage,
+            ramUsed: `${ramUsed}G`,
+            ramTotal: `${ramTotal}G`,
+            ramPercentage,
+            diskUsage,
+            platform: 'android'
+          });
+        });
+      });
+    } catch (e) {
+      resolve({ error: "Could not read system data" });
+    }
+  });
 };
 
-const server = http.createServer((req, res) => {
-  // CORS Headers biar browser bisa akses
+const server = http.createServer(async (req, res) => {
   res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS');
+  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
   res.setHeader('Content-Type', 'application/json');
 
   if (req.method === 'OPTIONS') {
@@ -56,16 +59,65 @@ const server = http.createServer((req, res) => {
     return;
   }
 
-  if (req.url === '/api/stats') {
+  const url = new URL(req.url, `http://localhost:${PORT}`);
+
+  if (url.pathname === '/api/stats') {
+    const stats = await getStats();
     res.writeHead(200);
-    res.end(JSON.stringify(getStats()));
-  } else {
+    res.end(JSON.stringify(stats));
+  } 
+  else if (url.pathname === '/api/exec' && req.method === 'POST') {
+    let body = '';
+    req.on('data', chunk => body += chunk);
+    req.on('end', () => {
+      const { command } = JSON.parse(body);
+      console.log(`Executing: ${command}`);
+      exec(command, (err, stdout, stderr) => {
+        res.writeHead(200);
+        res.end(JSON.stringify({
+          success: !err,
+          stdout: stdout,
+          stderr: stderr,
+          error: err ? err.message : null
+        }));
+      });
+    });
+  }
+  else {
     res.writeHead(404);
     res.end(JSON.stringify({ error: 'Not Found' }));
   }
 });
 
+// WebSocket for Terminal
+const wss = new WebSocketServer({ server });
+
+wss.on('connection', (ws) => {
+  console.log('Terminal: Client connected');
+
+  // Default to bash, fallback to sh
+  const shell = spawn('bash', ['-l'], {
+    env: { ...process.env, TERM: 'xterm-256color' }
+  });
+
+  shell.stdout.on('data', (data) => ws.send(data.toString()));
+  shell.stderr.on('data', (data) => ws.send(data.toString()));
+
+  ws.on('message', (message) => {
+    shell.stdin.write(message.toString());
+  });
+
+  shell.on('close', () => {
+    console.log('Terminal: Shell closed');
+    ws.close();
+  });
+
+  ws.on('close', () => {
+    shell.kill();
+  });
+});
+
 server.listen(PORT, () => {
   console.log(`🚀 XTermL Bridge running at http://localhost:${PORT}`);
-  console.log(`Dashboard will now use real system data from Termux!`);
+  console.log(`Dashboard metrics and Terminal are now LIVE!`);
 });

@@ -4,7 +4,6 @@ import {
   ArrowLeft,
   Settings,
   Box,
-  HardDrive,
   ChevronRight,
   Check,
 } from "lucide-react";
@@ -97,25 +96,6 @@ export default function Setup() {
             </h2>
             <p className="text-zinc-500 group-hover:text-zinc-400 transition-colors">
               Install Linux distributions without root access (Safe).
-            </p>
-          </motion.div>
-
-          <motion.div
-            variants={item}
-            onClick={() => navigate("/setup/chroot")}
-            className="relative p-6 rounded-xl border border-zinc-900 bg-zinc-950 hover:bg-zinc-900 transition-all duration-300 group cursor-pointer overflow-hidden hover:border-red-900/30"
-          >
-            <div className="absolute top-0 right-0 p-6 opacity-0 group-hover:opacity-100 transition-opacity transform translate-x-4 group-hover:translate-x-0 duration-300">
-              <ChevronRight className="h-6 w-6 text-red-500" />
-            </div>
-            <div className="mb-4 p-3 bg-zinc-900/50 rounded-lg w-fit group-hover:bg-red-900/20 transition-colors border border-zinc-800/50 group-hover:border-red-500/20">
-              <HardDrive className="h-6 w-6 text-zinc-300 group-hover:text-red-500 transition-colors" />
-            </div>
-            <h2 className="text-xl font-semibold mb-2 group-hover:text-red-100 text-zinc-200 transition-colors">
-              Setup Chroot
-            </h2>
-            <p className="text-zinc-500 group-hover:text-zinc-400 transition-colors">
-              Install full Linux environments with root access (Advanced).
             </p>
           </motion.div>
         </motion.div>
