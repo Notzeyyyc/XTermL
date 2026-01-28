@@ -34,44 +34,36 @@ export const useSystemStats = () => {
     const platform = Capacitor.getPlatform() === 'android' ? 'android' : 'windows';
 
     const fetchStats = async () => {
+      const hosts = ['127.0.0.1', 'localhost'];
+      let bridgeFound = false;
+
       try {
-        // 1. Try Capacitor Native Info First
         if (isNative) {
           const info = await CommunityDevice.getInfo();
-          
-          // @capacitor-community/device provides diskFree and diskTotal (in bytes)
           const totalDiskGB = info.diskTotal ? info.diskTotal / (1024 ** 3) : 64;
           const freeDiskGB = info.diskFree ? info.diskFree / (1024 ** 3) : 32;
           const diskUsagePerc = Math.round(((totalDiskGB - freeDiskGB) / totalDiskGB) * 100);
 
-          setStats(prev => ({
-            ...prev,
-            diskUsage: diskUsagePerc,
-            isNative: true,
-            isMock: false,
-            platform: 'android'
-          }));
+          setStats(prev => ({ ...prev, diskUsage: diskUsagePerc, isNative: true, isMock: !bridgeFound, platform: 'android' }));
         }
 
-        // 2. Try Local Bridge (Useful for Termux integration)
-        const response = await fetch('http://127.0.0.1:3001/api/stats', {
-          signal: AbortSignal.timeout(2000) 
-        });
-        
-        if (response.ok) {
-          const bridgeData = await response.json();
-          setStats(prev => ({
-            ...prev,
-            ...bridgeData,
-            isMock: false,
-            isNative,
-            platform
-          }));
-          return;
+        for (const host of hosts) {
+          try {
+            const response = await fetch(`http://${host}:3001/api/stats`, {
+              signal: AbortSignal.timeout(1500) 
+            });
+            
+            if (response.ok) {
+              const bridgeData = await response.json();
+              setStats(prev => ({ ...prev, ...bridgeData, isMock: false, isNative, platform }));
+              bridgeFound = true;
+              break; 
+            }
+          } catch (e) {
+            // Host failed, try next
+          }
         }
-      } catch (error) {
-        // No bridge found
-      }
+      } catch (error) { }
 
       // 3. Fallback / Mock
       setStats(prev => {
