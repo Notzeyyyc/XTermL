@@ -2,7 +2,6 @@ import { useEffect, useRef, useState } from 'react';
 import { Terminal as XTerm } from '@xterm/xterm';
 import { FitAddon } from '@xterm/addon-fit';
 import '@xterm/xterm/css/xterm.css';
-import { motion } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft, Maximize2, RefreshCw, Terminal as TerminalIcon, LayoutGrid, Wifi, WifiOff } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
@@ -14,21 +13,24 @@ export default function TerminalPage() {
   const { status } = useSetupStatus();
   const terminalRef = useRef<HTMLDivElement>(null);
   const xtermRef = useRef<XTerm | null>(null);
-  const fitAddonRef = useRef<FitAddon | null>(null);
   const socketRef = useRef<WebSocket | null>(null);
   const [isConnected, setIsConnected] = useState(false);
-  const distroInfo = getDistroInfo(status.distroId);
+  const onDataDisposable = useRef<{ dispose: () => void } | null>(null);
+
+  // Destructure status values to use in dependency array without bridgeStatus
+  const { isReady, selectedDistro, distroId, username } = status;
+  const distroInfo = getDistroInfo(distroId);
 
   useEffect(() => {
-    if (!status.isReady) {
+    if (!isReady) {
       navigate('/setup');
     }
-  }, [status.isReady, navigate]);
+  }, [isReady, navigate]);
 
   useEffect(() => {
-    if (!terminalRef.current || !status.isReady) return;
+    if (!terminalRef.current || !isReady) return;
 
-    // Initialize XTerm
+    // Initialize XTerm only once per mount/ready state
     const term = new XTerm({
       cursorBlink: true,
       theme: {
@@ -57,105 +59,87 @@ export default function TerminalPage() {
     fitAddon.fit();
 
     xtermRef.current = term;
-    fitAddonRef.current = fitAddon;
 
-    // Connect to WebSocket Bridge
-    const connectToBridge = () => {
-      term.writeln('\x1b[1;30mConnecting to XTermL Bridge...\x1b[0m');
-      
+    const setupTerminalInteraction = () => {
+      if (onDataDisposable.current) onDataDisposable.current.dispose();
+
       const ws = new WebSocket('ws://localhost:3001');
       socketRef.current = ws;
 
       ws.onopen = () => {
         setIsConnected(true);
         term.clear();
-        term.writeln('\x1b[1;32mConnected to Termux Bridge via WebSocket\x1b[0m');
+        term.writeln('\x1b[1;32mXTermL Bridge: Connected\x1b[0m');
         
-        // Auto login to proot-distro if ready
-        if (status.distroId) {
-          term.writeln(`\x1b[1;34mLogging into ${status.selectedDistro}...\x1b[0m`);
-          ws.send(`proot-distro login ${status.distroId}\r`);
+        if (distroId) {
+          term.writeln(`\x1b[1;34mSyncing environment: ${selectedDistro}...\x1b[0m`);
+          ws.send(`proot-distro login ${distroId}\r`);
         }
-      };
 
-      ws.onmessage = (event) => {
-        term.write(event.data);
-      };
-
-      ws.onclose = () => {
-        setIsConnected(false);
-        term.writeln('\r\n\x1b[1;31mBridge Connection Closed. Reverting to local shell simulation...\x1b[0m');
-        startSimulation(term);
-      };
-
-      ws.onerror = () => {
-        setIsConnected(false);
-        term.writeln('\r\n\x1b[1;33mBridge not detected. Make sure "node bridge.js" is running in Termux.\x1b[0m');
-        startSimulation(term);
-      };
-
-      term.onData(data => {
-        if (ws.readyState === WebSocket.OPEN) {
-          ws.send(data);
-        }
-      });
-    };
-
-    const startSimulation = (t: XTerm) => {
-      const username = status.username || 'user';
-      const hostname = status.selectedDistro?.toLowerCase().replace(' ', '') || 'xterml';
-      const prompt = `\r\n\x1b[1;32m${username}@${hostname}\x1b[0m:\x1b[1;34m~\x1b[0m$ `;
-      
-      t.writeln('\x1b[1;30m[SIMULATION MODE ACTIVE]\x1b[0m');
-      t.write(prompt);
-
-      let currentLine = '';
-      const onDataSim = (data: string) => {
-        const code = data.charCodeAt(0);
-        if (code === 13) { 
-          t.write('\r\n');
-          // Simple mock commands
-          if (currentLine.trim() === 'help') t.writeln('Simulation commands: help, clear, exit');
-          else if (currentLine.trim() === 'clear') t.clear();
-          else if (currentLine.trim() === 'exit') navigate('/dashboard');
-          else if (currentLine.trim() !== '') t.writeln(`bash: ${currentLine.split(' ')[0]}: command not found`);
-          
-          currentLine = '';
-          t.write(prompt);
-        } else if (code === 127) {
-          if (currentLine.length > 0) {
-            currentLine = currentLine.slice(0, -1);
-            t.write('\b \b');
+        onDataDisposable.current = term.onData(data => {
+          if (ws.readyState === WebSocket.OPEN) {
+            ws.send(data);
           }
-        } else {
-          currentLine += data;
-          t.write(data);
-        }
+        });
       };
-      
-      const listener = t.onData(onDataSim);
-      return () => listener.dispose();
+
+      ws.onmessage = (event) => term.write(event.data);
+
+      const handleFail = () => {
+        if (socketRef.current?.readyState === WebSocket.OPEN) return;
+        setIsConnected(false);
+        if (onDataDisposable.current) onDataDisposable.current.dispose();
+        
+        term.writeln('\r\n\x1b[1;31mBridge Offline. Simulation Mode Active.\x1b[0m');
+        const hostname = selectedDistro?.toLowerCase().replace(' ', '') || 'xterml';
+        const prompt = `\r\n\x1b[1;32m${username}@${hostname}\x1b[0m:\x1b[1;34m~\x1b[0m$ `;
+        
+        term.write(prompt);
+        let currentLine = '';
+
+        onDataDisposable.current = term.onData(data => {
+          const code = data.charCodeAt(0);
+          if (code === 13) { 
+            term.write('\r\n');
+            if (currentLine.trim() === 'help') term.writeln('Commands: help, clear, exit');
+            else if (currentLine.trim() === 'clear') term.clear();
+            else if (currentLine.trim() === 'exit') navigate('/dashboard');
+            else if (currentLine.trim() !== '') term.writeln(`bash: ${currentLine.split(' ')[0]}: command not found`);
+            currentLine = '';
+            term.write(prompt);
+          } else if (code === 127) {
+            if (currentLine.length > 0) {
+              currentLine = currentLine.slice(0, -1);
+              term.write('\b \b');
+            }
+          } else {
+            currentLine += data;
+            term.write(data);
+          }
+        });
+      };
+
+      ws.onclose = handleFail;
+      ws.onerror = handleFail;
     };
 
-    connectToBridge();
+    setupTerminalInteraction();
 
     const handleResize = () => fitAddon.fit();
     window.addEventListener('resize', handleResize);
 
     return () => {
       if (socketRef.current) socketRef.current.close();
+      if (onDataDisposable.current) onDataDisposable.current.dispose();
       term.dispose();
       window.removeEventListener('resize', handleResize);
     };
-  }, [navigate, status.isReady, status.selectedDistro, status.distroId, distroInfo]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isReady, selectedDistro, distroId, username]); 
 
   return (
     <div className="min-h-screen bg-black text-white flex flex-col font-sans overflow-hidden">
-      <motion.header 
-        initial={{ y: -20, opacity: 0 }}
-        animate={{ y: 0, opacity: 1 }}
-        className="h-14 border-b border-white/5 bg-zinc-950/80 backdrop-blur-xl flex items-center justify-between px-4 z-10 shrink-0"
-      >
+      <header className="h-14 border-b border-white/5 bg-zinc-950/80 backdrop-blur-xl flex items-center justify-between px-4 z-10 shrink-0">
         <div className="flex items-center gap-3">
           <Button variant="ghost" size="icon" onClick={() => navigate('/dashboard')} className="text-zinc-500 hover:text-white rounded-xl">
             <ArrowLeft className="h-5 w-5" />
@@ -163,15 +147,15 @@ export default function TerminalPage() {
           <div className="flex items-center gap-2">
             <div className="p-1 px-3 rounded-xl bg-white/5 border border-white/10 flex items-center gap-2">
                 <TerminalIcon className="h-3.5 w-3.5" style={{ color: distroInfo?.color }} />
-                <span className="text-[11px] font-black tracking-widest uppercase text-zinc-400">{status.selectedDistro || 'Console'}</span>
+                <span className="text-[11px] font-black tracking-widest uppercase text-zinc-400">{selectedDistro || 'Console'}</span>
             </div>
             {isConnected ? (
               <div className="flex items-center gap-1.5 px-2 py-1 rounded-lg bg-emerald-500/10 border border-emerald-500/20 text-[9px] font-black text-emerald-500 tracking-tighter uppercase">
-                <Wifi size={10} /> Live Bridge
+                <Wifi size={10} /> Bridge Live
               </div>
             ) : (
               <div className="flex items-center gap-1.5 px-2 py-1 rounded-lg bg-orange-500/10 border border-orange-500/20 text-[9px] font-black text-orange-500 tracking-tighter uppercase">
-                <WifiOff size={10} /> Simulated
+                <WifiOff size={10} /> Local SIM
               </div>
             )}
           </div>
@@ -181,14 +165,14 @@ export default function TerminalPage() {
           <Button variant="ghost" size="icon" className="h-9 w-9 text-zinc-500 hover:text-white rounded-xl active:scale-90 transition-transform">
              <LayoutGrid className="h-4 w-4" />
           </Button>
-          <Button onClick={() => window.location.reload()} variant="ghost" size="icon" className="h-9 w-9 text-zinc-500 hover:text-white rounded-xl active:rotate-180 transition-transform duration-500">
+          <Button onClick={() => window.location.reload()} variant="ghost" size="icon" className="h-9 w-9 text-zinc-500 hover:text-white rounded-xl">
             <RefreshCw className="h-4 w-4" />
           </Button>
           <Button variant="ghost" size="icon" className="h-9 w-9 text-zinc-500 hover:text-white rounded-xl">
             <Maximize2 className="h-4 w-4" />
           </Button>
         </div>
-      </motion.header>
+      </header>
 
       <div className="flex-1 relative bg-[#0a0a0a] overflow-hidden">
         <div className="absolute inset-0 p-3" ref={terminalRef}></div>
@@ -200,12 +184,13 @@ export default function TerminalPage() {
             key={key}
             onPointerDown={() => {
               if (socketRef.current?.readyState === WebSocket.OPEN) {
-                // Mapping some common touch keys to ANSI sequences if needed, 
-                // but for now we just send regular chars for keys that match.
-                // Special handling for some keys:
                 if (key === 'TAB') socketRef.current.send('\t');
                 else if (key === 'ESC') socketRef.current.send('\x1b');
-                // Note: UP/DOWN etc usually need ANSI escape sequences.
+                // Mapping Arrow keys (standard ANSI)
+                else if (key === 'UP') socketRef.current.send('\x1b[A');
+                else if (key === 'DOWN') socketRef.current.send('\x1b[B');
+                else if (key === 'RIGHT') socketRef.current.send('\x1b[C');
+                else if (key === 'LEFT') socketRef.current.send('\x1b[D');
               }
             }}
             className="shrink-0 h-10 px-4 rounded-xl bg-zinc-900 border border-white/5 text-[10px] font-black text-zinc-500 active:bg-blue-600 active:text-white active:scale-95 transition-all uppercase tracking-tighter"

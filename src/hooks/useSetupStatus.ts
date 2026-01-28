@@ -7,6 +7,7 @@ export interface SetupStatus {
   distroId: string | null;
   username: string;
   isReady: boolean;
+  isDataDownloaded: boolean;
   installedPackages: string[];
   bridgeStatus: 'offline' | 'connecting' | 'online';
   platform: string;
@@ -24,6 +25,7 @@ export const useSetupStatus = () => {
       distroId: null,
       username: 'user',
       isReady: false,
+      isDataDownloaded: false,
       installedPackages: ['bash', 'coreutils'],
       bridgeStatus: 'offline',
       platform: Capacitor.getPlatform(),

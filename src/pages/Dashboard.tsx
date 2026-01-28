@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { motion, AnimatePresence } from "framer-motion";
 import {
@@ -10,7 +11,8 @@ import {
   Zap,
   AlertTriangle,
   Box,
-  Monitor
+  Monitor,
+  CloudDownload
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useSystemStats } from "@/hooks/useSystemStats";
@@ -22,6 +24,12 @@ export default function Dashboard() {
   const stats = useSystemStats();
   const { status } = useSetupStatus();
   const distroInfo = getDistroInfo(status.distroId);
+
+  useEffect(() => {
+    if (!status.isDataDownloaded) {
+      navigate('/sync');
+    }
+  }, [status.isDataDownloaded, navigate]);
 
   const container = {
     hidden: { opacity: 0 },
@@ -39,8 +47,10 @@ export default function Dashboard() {
   };
 
   const handleTerminalLaunch = () => {
-    if (status.isReady) {
+    if (status.isReady && status.isDataDownloaded) {
       navigate('/terminal');
+    } else if (!status.isDataDownloaded) {
+      navigate('/sync');
     } else {
       navigate('/setup');
     }
@@ -60,7 +70,7 @@ export default function Dashboard() {
           className="flex justify-between items-center"
         >
           <div className="space-y-1">
-            <h1 className="text-4xl font-black bg-clip-text text-transparent bg-gradient-to-r from-white via-zinc-400 to-zinc-800 tracking-tighter">
+            <h1 className="text-4xl font-black bg-clip-text text-transparent bg-linear-to-r from-white via-zinc-400 to-zinc-800 tracking-tighter">
               XTermL
             </h1>
             <div className="flex items-center gap-2">
@@ -149,28 +159,36 @@ export default function Dashboard() {
           </div>
         </motion.div>
 
-        {/* Setup Warning if Not Ready */}
+        {/* Global Warning Banner */}
         <AnimatePresence>
-          {!status.isReady && (
+          {(!status.isDataDownloaded || !status.isReady) && (
             <motion.div
               initial={{ opacity: 0, height: 0 }}
               animate={{ opacity: 1, height: 'auto' }}
               exit={{ opacity: 0, height: 0 }}
               variants={item}
-              onClick={() => navigate('/setup')}
-              className="p-5 rounded-[2rem] bg-orange-500/10 border border-orange-500/20 flex items-center justify-between group cursor-pointer"
+              onClick={() => navigate(!status.isDataDownloaded ? '/sync' : '/setup')}
+              className={`p-5 rounded-[2rem] border flex items-center justify-between group cursor-pointer ${
+                !status.isDataDownloaded 
+                    ? 'bg-blue-500/10 border-blue-500/20' 
+                    : 'bg-orange-500/10 border-orange-500/20'
+              }`}
             >
               <div className="flex items-center gap-4">
-                 <div className="p-3 bg-orange-500/20 rounded-2xl">
-                   <AlertTriangle className="h-6 w-6 text-orange-400" />
+                 <div className={`p-3 rounded-2xl ${!status.isDataDownloaded ? 'bg-blue-500/20' : 'bg-orange-500/20'}`}>
+                   {!status.isDataDownloaded ? <CloudDownload className="h-6 w-6 text-blue-400" /> : <AlertTriangle className="h-6 w-6 text-orange-400" />}
                  </div>
                  <div>
-                   <p className="text-sm font-bold text-orange-200">System Installation Pending</p>
-                   <p className="text-xs text-orange-500/70 font-medium">Pick a Linux distribution to unlock terminal and packages.</p>
+                   <p className={`text-sm font-bold ${!status.isDataDownloaded ? 'text-blue-200' : 'text-orange-200'}`}>
+                    {!status.isDataDownloaded ? 'System Migration Required' : 'Distribution Pending'}
+                   </p>
+                   <p className={`text-xs font-medium opacity-70 ${!status.isDataDownloaded ? 'text-blue-400' : 'text-orange-400'}`}>
+                    {!status.isDataDownloaded ? 'Download core bridge assets to unlock dashboard features.' : 'Setup a Linux environment to enable the terminal console.'}
+                   </p>
                  </div>
               </div>
-              <div className="h-10 w-10 rounded-xl bg-orange-500/20 flex items-center justify-center group-hover:translate-x-1 transition-transform">
-                <ChevronRight className="h-5 w-5 text-orange-400" />
+              <div className={`h-10 w-10 rounded-xl flex items-center justify-center group-hover:translate-x-1 transition-transform ${!status.isDataDownloaded ? 'bg-blue-500/20' : 'bg-orange-500/20'}`}>
+                <ChevronRight className={`h-5 w-5 ${!status.isDataDownloaded ? 'text-blue-400' : 'text-orange-400'}`} />
               </div>
             </motion.div>
           )}
@@ -197,28 +215,29 @@ export default function Dashboard() {
                     <p className="text-zinc-500 text-sm font-medium">Interactive shell for system administration</p>
                  </div>
                </div>
-               <p className="text-zinc-500 text-sm max-w-xl leading-relaxed">
-                 {status.isReady 
+               <p className="text-zinc-500 text-sm max-w-xl leading-relaxed font-medium">
+                 {status.isReady && status.isDataDownloaded
                     ? `Currently logged in as ${status.username}. Full access to ${status.selectedDistro} rootfs.` 
-                    : 'A secure, containerized terminal environment requires a Proot distribution setup.'}
+                    : !status.isDataDownloaded 
+                        ? 'Download system assets to enable terminal execution.'
+                        : 'A secure, containerized terminal environment requires a Proot distribution setup.'}
                </p>
              </div>
 
              <Button 
                 className={`w-full md:w-auto px-12 py-8 text-xl font-black rounded-3xl transition-all relative overflow-hidden ${
-                  status.isReady 
+                  (status.isReady && status.isDataDownloaded)
                     ? 'bg-white text-black hover:bg-zinc-200 shadow-[0_0_50px_rgba(255,255,255,0.1)] group-hover:scale-105' 
                     : 'bg-zinc-900 text-zinc-600 border border-white/5 cursor-not-allowed'
                 }`}
              >
                 <div className="flex items-center gap-3 relative z-10">
-                  <Play className={`h-6 w-6 ${status.isReady ? 'fill-black' : ''}`} />
-                  {status.isReady ? 'Launch Bash' : 'Locked'}
+                  <Play className={`h-6 w-6 ${(status.isReady && status.isDataDownloaded) ? 'fill-black' : ''}`} />
+                  {(status.isReady && status.isDataDownloaded) ? 'Launch Bash' : 'Locked'}
                 </div>
              </Button>
           </div>
 
-          {/* Semi-Actions */}
           <div className="lg:col-span-6 p-8 rounded-[2.5rem] bg-zinc-950 border border-white/5 flex items-center justify-between group cursor-pointer hover:bg-zinc-900/50 transition-all h-32">
               <div className="flex items-center gap-5">
                 <div className="p-4 bg-yellow-500/10 rounded-[1.5rem] group-hover:scale-110 transition-transform">
@@ -248,9 +267,9 @@ export default function Dashboard() {
 
         {/* Activity Feed */}
         <motion.div variants={item} className="space-y-6">
-            <h3 className="text-xl font-black tracking-tight flex items-center gap-3 px-2">
-              Recent Logs
-              <div className="h-1 w-1 px-1 rounded-full bg-blue-500"></div>
+            <h3 className="text-xl font-black tracking-tight flex items-center gap-3 px-2 text-zinc-400">
+              Session Logs
+              <div className="h-1.5 w-1.5 rounded-full bg-blue-500 animate-pulse"></div>
             </h3>
             
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -262,10 +281,10 @@ export default function Dashboard() {
                           </div>
                           <div>
                             <p className="text-sm font-bold text-zinc-100">System Heartbeat</p>
-                            <p className="text-[10px] text-zinc-600 font-bold uppercase tracking-widest">PID: {Math.floor(Math.random()*2000)} • Stable</p>
+                            <p className="text-[10px] text-zinc-600 font-bold uppercase tracking-widest">PID: {Math.floor(Math.random()*2000)} • Online</p>
                           </div>
                         </div>
-                        <span className="text-[10px] font-bold text-zinc-700 uppercase tracking-widest">Just Now</span>
+                        <span className="text-[10px] font-bold text-zinc-700 uppercase tracking-widest">Active</span>
                     </div>
                 ))}
             </div>

@@ -5,12 +5,14 @@ import GeneralSetup from "@/pages/setup/General";
 import ProotSetup from "@/pages/setup/Proot";
 import Dashboard from "@/pages/Dashboard";
 import Terminal from "@/pages/Terminal";
+import Sync from "@/pages/Sync";
 
 function App() {
   return (
     <Router>
       <Routes>
         <Route path="/" element={<Home />} />
+        <Route path="/sync" element={<Sync />} />
         <Route path="/setup" element={<Setup />} />
         <Route path="/setup/general" element={<GeneralSetup />} />
         <Route path="/setup/proot" element={<ProotSetup />} />
