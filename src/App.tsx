@@ -6,6 +6,8 @@ import ProotSetup from "@/pages/setup/Proot";
 import Dashboard from "@/pages/Dashboard";
 import Terminal from "@/pages/Terminal";
 import Sync from "@/pages/Sync";
+import Explorer from "@/pages/Explorer";
+import Packages from "@/pages/Packages";
 
 function App() {
   return (
@@ -18,6 +20,8 @@ function App() {
         <Route path="/setup/proot" element={<ProotSetup />} />
         <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/terminal" element={<Terminal />} />
+        <Route path="/explorer" element={<Explorer />} />
+        <Route path="/packages" element={<Packages />} />
       </Routes>
     </Router>
   );

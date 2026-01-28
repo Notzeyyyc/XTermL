@@ -1,20 +1,18 @@
 /**
  * XTermL Termux Bridge (Node.js)
- * Jalanin ini di Termux buat ngasih data real ke Dashboard:
- * 1. pkg install nodejs
- * 2. node bridge.js
+ * Enhanced with File Manager & Package Manager APIs
  */
 import http from 'http';
 import { exec, spawn } from 'child_process';
 import { WebSocketServer } from 'ws';
+import fs from 'fs';
+import path from 'path';
 
 const PORT = 3001;
 
-// Function to get system metrics
 const getStats = () => {
   return new Promise((resolve) => {
     try {
-      // RAM Info (Linux/Termux)
       exec('free -m', (err, stdout) => {
         if (err) return resolve({ error: 'Failed' });
         const lines = stdout.split('\n');
@@ -23,12 +21,9 @@ const getStats = () => {
         const ramUsed = (parseInt(memLine[2]) / 1024).toFixed(1);
         const ramPercentage = Math.round((parseInt(memLine[2]) / parseInt(memLine[1])) * 100);
 
-        // Disk Info
         exec('df -h /data', (err2, stdout2) => {
           const diskLine = stdout2 ? stdout2.split('\n')[1].split(/\s+/) : [];
           const diskUsage = diskLine[4] ? parseInt(diskLine[4].replace('%', '')) : 0;
-
-          // CPU Info (Mock for now, needs /proc/stat parsing for real)
           const cpuUsage = Math.floor(Math.random() * 20) + 5;
 
           resolve({
@@ -61,17 +56,54 @@ const server = http.createServer(async (req, res) => {
 
   const url = new URL(req.url, `http://localhost:${PORT}`);
 
+  // 1. SYSTEM STATS
   if (url.pathname === '/api/stats') {
     const stats = await getStats();
     res.writeHead(200);
     res.end(JSON.stringify(stats));
   } 
+
+  // 2. FILE MANAGER (List Files)
+  else if (url.pathname === '/api/files' && req.method === 'GET') {
+    const dir = url.searchParams.get('path') || process.env.HOME || '/';
+    fs.readdir(dir, { withFileTypes: true }, (err, files) => {
+      if (err) {
+        res.writeHead(500);
+        return res.end(JSON.stringify({ error: err.message }));
+      }
+      const data = files.map(f => ({
+        name: f.name,
+        isDir: f.isDirectory(),
+        path: path.join(dir, f.name),
+        size: f.isFile() ? fs.statSync(path.join(dir, f.name)).size : 0
+      }));
+      res.writeHead(200);
+      res.end(JSON.stringify(data));
+    });
+  }
+
+  // 3. PACKAGE MANAGER (Apt/Pkg)
+  else if (url.pathname === '/api/packages' && req.method === 'GET') {
+    exec('pkg list-installed', (err, stdout) => {
+      if (err) {
+        res.writeHead(500);
+        return res.end(JSON.stringify({ error: 'Failed to list packages' }));
+      }
+      const pkgs = stdout.split('\n').filter(Boolean).map(line => {
+        const [name, version] = line.split('/');
+        return { name, version: version?.split(' ')[0] };
+      });
+      res.writeHead(200);
+      res.end(JSON.stringify(pkgs));
+    });
+  }
+
+  // 4. EXEC COMMAND
   else if (url.pathname === '/api/exec' && req.method === 'POST') {
     let body = '';
     req.on('data', chunk => body += chunk);
     req.on('end', () => {
       const { command } = JSON.parse(body);
-      console.log(`Executing: ${command}`);
       exec(command, (err, stdout, stderr) => {
         res.writeHead(200);
         res.end(JSON.stringify({
@@ -89,35 +121,16 @@ const server = http.createServer(async (req, res) => {
   }
 });
 
-// WebSocket for Terminal
 const wss = new WebSocketServer({ server });
-
 wss.on('connection', (ws) => {
-  console.log('Terminal: Client connected');
-
-  // Default to bash, fallback to sh
-  const shell = spawn('bash', ['-l'], {
-    env: { ...process.env, TERM: 'xterm-256color' }
-  });
-
+  const shell = spawn('bash', ['-l'], { env: { ...process.env, TERM: 'xterm-256color' } });
   shell.stdout.on('data', (data) => ws.send(data.toString()));
   shell.stderr.on('data', (data) => ws.send(data.toString()));
-
-  ws.on('message', (message) => {
-    shell.stdin.write(message.toString());
-  });
-
-  shell.on('close', () => {
-    console.log('Terminal: Shell closed');
-    ws.close();
-  });
-
-  ws.on('close', () => {
-    shell.kill();
-  });
+  ws.on('message', (message) => shell.stdin.write(message.toString()));
+  shell.on('close', () => ws.close());
+  ws.on('close', () => shell.kill());
 });
 
 server.listen(PORT, () => {
-  console.log(`🚀 XTermL Bridge running at http://localhost:${PORT}`);
-  console.log(`Dashboard metrics and Terminal are now LIVE!`);
+  console.log(`🚀 XTermL Bridge Pro running at http://localhost:${PORT}`);
 });

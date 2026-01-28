@@ -238,7 +238,10 @@ export default function Dashboard() {
              </Button>
           </div>
 
-          <div className="lg:col-span-6 p-8 rounded-[2.5rem] bg-zinc-950 border border-white/5 flex items-center justify-between group cursor-pointer hover:bg-zinc-900/50 transition-all h-32">
+          <div 
+             onClick={() => navigate('/explorer')}
+             className="lg:col-span-6 p-8 rounded-[2.5rem] bg-zinc-950 border border-white/5 flex items-center justify-between group cursor-pointer hover:bg-zinc-900/50 transition-all h-32"
+          >
               <div className="flex items-center gap-5">
                 <div className="p-4 bg-yellow-500/10 rounded-[1.5rem] group-hover:scale-110 transition-transform">
                   <FolderOpen className="h-7 w-7 text-yellow-500" />
@@ -251,7 +254,10 @@ export default function Dashboard() {
               <ChevronRight className="h-5 w-5 text-zinc-700 group-hover:text-zinc-300" />
           </div>
 
-          <div className="lg:col-span-6 p-8 rounded-[2.5rem] bg-zinc-950 border border-white/5 flex items-center justify-between group cursor-pointer hover:bg-zinc-900/50 transition-all h-32">
+          <div 
+             onClick={() => navigate('/packages')}
+             className="lg:col-span-6 p-8 rounded-[2.5rem] bg-zinc-950 border border-white/5 flex items-center justify-between group cursor-pointer hover:bg-zinc-900/50 transition-all h-32"
+          >
               <div className="flex items-center gap-5">
                 <div className="p-4 bg-orange-500/10 rounded-[1.5rem] group-hover:scale-110 transition-transform">
                   <Package className="h-7 w-7 text-orange-500" />
