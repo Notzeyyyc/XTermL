@@ -1,6 +1,7 @@
 import { useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { motion, AnimatePresence } from "framer-motion";
+import { Capacitor } from "@capacitor/core";
 import {
   Terminal,
   FolderOpen,
@@ -29,6 +30,29 @@ export default function Dashboard() {
     if (!status.isDataDownloaded) {
       navigate('/sync');
     }
+
+    // Lifecycle Management: Auto-Stop on close
+    const handleTerminate = () => {
+      if (Capacitor.isNativePlatform()) {
+         // On Android, we try to send a fire-and-forget beacon
+         fetch('http://127.0.0.1:3001/api/terminate', { 
+           method: 'POST', 
+           keepalive: true,
+           mode: 'no-cors' 
+         }).catch(() => {});
+      }
+    };
+
+    window.addEventListener('beforeunload', handleTerminate);
+    document.addEventListener('visibilitychange', () => {
+       if (document.visibilityState === 'hidden') {
+          // Optional: You could reduce polling frequency here
+       }
+    });
+
+    return () => {
+      window.removeEventListener('beforeunload', handleTerminate);
+    };
   }, [status.isDataDownloaded, navigate]);
 
   const container = {
@@ -111,14 +135,14 @@ export default function Dashboard() {
           <div className="relative overflow-hidden rounded-[2.5rem] border border-white/5 bg-zinc-950/40 backdrop-blur-3xl shadow-2xl p-8 md:p-10">
             {/* Distro Background Icon */}
             <div className="absolute top-0 right-0 -mr-16 -mt-16 opacity-[0.03] pointer-events-none transition-transform group-hover:scale-110 duration-1000">
-               {distroInfo ? <distroInfo.icon size={400} /> : <Monitor size={400} />}
+               {distroInfo ? <img src={distroInfo.icon} alt="" className="w-[400px] h-[400px] object-contain" /> : <Monitor size={400} />}
             </div>
 
             <div className="relative flex flex-col md:flex-row gap-10 items-center justify-between">
               <div className="flex items-center gap-8 w-full md:w-auto">
                 <div className={`p-6 rounded-[2rem] shadow-2xl`} style={{ backgroundColor: `${distroInfo?.color}15` || '#ffffff05', border: `1px solid ${distroInfo?.color}30` || '#ffffff10' }}>
                   {distroInfo ? (
-                    <distroInfo.icon size={48} style={{ color: distroInfo.color }} />
+                    <img src={distroInfo.icon} alt={distroInfo.name} className="w-12 h-12 object-contain" />
                   ) : (
                     <Box size={48} className="text-zinc-700" />
                   )}
@@ -279,18 +303,25 @@ export default function Dashboard() {
             </h3>
             
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {[1, 2].map((i) => (
+                {[
+                  { name: 'Bridge Service', type: 'System' },
+                  { name: 'XTermL Kernel', type: 'Core' }
+                ].map((session, i) => (
                     <div key={i} className="p-6 rounded-[2rem] bg-zinc-950/40 border border-zinc-900 flex items-center justify-between hover:border-zinc-700 transition-colors backdrop-blur-md">
                         <div className="flex items-center gap-4">
-                          <div className="h-10 w-10 rounded-full bg-emerald-500/20 flex items-center justify-center border border-emerald-500/20">
-                            <Zap size={18} className="text-emerald-500" />
+                          <div className={`h-10 w-10 rounded-full flex items-center justify-center border ${stats.isMock ? 'bg-orange-500/10 border-orange-500/20' : 'bg-emerald-500/10 border-emerald-500/20'}`}>
+                            <Zap size={18} className={stats.isMock ? 'text-orange-500' : 'text-emerald-500'} />
                           </div>
                           <div>
-                            <p className="text-sm font-bold text-zinc-100">System Heartbeat</p>
-                            <p className="text-[10px] text-zinc-600 font-bold uppercase tracking-widest">PID: {Math.floor(Math.random()*2000)} • Online</p>
+                            <p className="text-sm font-bold text-zinc-100">{session.name}</p>
+                            <p className="text-[10px] text-zinc-600 font-bold uppercase tracking-widest">
+                              PID: {stats.pid ? (stats.pid + i) : (1000 + i)} • {stats.isMock ? 'Simulated' : 'Online'}
+                            </p>
                           </div>
                         </div>
-                        <span className="text-[10px] font-bold text-zinc-700 uppercase tracking-widest">Active</span>
+                        <span className={`text-[9px] font-black uppercase tracking-widest px-3 py-1 rounded-full border ${stats.isMock ? 'bg-zinc-900 border-zinc-800 text-zinc-600' : 'bg-emerald-500/10 border-emerald-500/20 text-emerald-400'}`}>
+                          {stats.isMock ? 'Idle' : 'Active'}
+                        </span>
                     </div>
                 ))}
             </div>

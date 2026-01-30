@@ -51,7 +51,7 @@ export default function Setup() {
             <div className="p-2 bg-zinc-900/50 rounded-lg border border-zinc-800">
               <Settings className="h-6 w-6 text-zinc-100" />
             </div>
-            <h1 className="text-2xl md:text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-zinc-100 to-zinc-500">
+            <h1 className="text-2xl md:text-3xl font-bold bg-clip-text text-transparent bg-linear-to-r from-zinc-100 to-zinc-500">
               Setup Menu
             </h1>
           </div>
@@ -105,7 +105,7 @@ export default function Setup() {
         initial={{ opacity: 0, y: 50 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.2, type: "spring", stiffness: 200, damping: 20 }}
-        className="fixed bottom-0 left-0 right-0 p-4 pb-6 md:p-8 bg-gradient-to-t from-black via-black to-transparent pt-12 pointer-events-none"
+        className="fixed bottom-0 left-0 right-0 p-4 pb-6 md:p-8 bg-linear-to-t from-black via-black to-transparent pt-12 pointer-events-none"
       >
         <Button
           onClick={() => navigate("/dashboard")}

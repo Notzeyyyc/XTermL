@@ -62,8 +62,23 @@ const server = http.createServer(async (req, res) => {
   if (url.pathname === '/api/stats') {
     const stats = await getStats();
     res.writeHead(200);
-    res.end(JSON.stringify(stats));
+    res.end(JSON.stringify({
+      ...stats,
+      pid: process.pid,
+      uptime: process.uptime()
+    }));
   } 
+  // kill all sessions (graceful shutdown)
+  else if (url.pathname === '/api/terminate' && req.method === 'POST') {
+    console.log('Bridge: Received termination signal from App UI');
+    res.writeHead(200);
+    res.end(JSON.stringify({ success: true, message: 'Cleaning up and shutting down...' }));
+    
+    // Give time for response to be sent then exit
+    setTimeout(() => {
+        process.exit(0);
+    }, 500);
+  }
   // file list
   else if (url.pathname === '/api/files' && req.method === 'GET') {
     const dir = url.searchParams.get('path') || process.env.HOME || '/';
@@ -150,8 +165,8 @@ const wss = new WebSocketServer({ server });
 wss.on('connection', (ws) => {
   console.log('Bridge: User Connected via WebSocket');
   
-  // Use 'sh' as fallback if 'bash' is problematic, but bash is usually fine in Termux
-  const shell = spawn('login', [], {
+  // Using bash directly is often more stable for non-tty sockets
+  const shell = spawn('/bin/bash', ['-l'], {
     env: { ...process.env, TERM: 'xterm-256color' },
     stdio: ['pipe', 'pipe', 'pipe']
   });

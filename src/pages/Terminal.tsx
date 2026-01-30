@@ -22,8 +22,15 @@ export default function TerminalPage() {
   const distroInfo = getDistroInfo(distroId);
 
   const cleanup = useCallback(() => {
-    if (socketRef.current) socketRef.current.close();
-    if (onDataDisposable.current) onDataDisposable.current.dispose();
+    if (socketRef.current) {
+        socketRef.current.onclose = null; // Prevent reconnect loop during intentional cleanup
+        socketRef.current.close();
+        socketRef.current = null;
+    }
+    if (onDataDisposable.current) {
+        onDataDisposable.current.dispose();
+        onDataDisposable.current = null;
+    }
   }, []);
 
   useEffect(() => {
@@ -65,26 +72,40 @@ export default function TerminalPage() {
     xtermRef.current = term;
     initialized.current = true;
 
+    // Small delay to ensure container is fully rendered before fitting
+    setTimeout(() => {
+        if (initialized.current) fitAddon.fit();
+    }, 100);
+
+    let retryCount = 0;
+    const MAX_RETRIES = 5;
+
     const connectBridge = () => {
+      if (retryCount >= MAX_RETRIES) {
+        term.writeln('\r\n\x1b[31m[System] Maximum reconnection attempts reached. Please check if the bridge is running.\x1b[0m');
+        return;
+      }
+
       cleanup();
-      term.writeln('\x1b[33m[System] Connecting to 127.0.0.1:3001...\x1b[0m');
+      term.writeln('\x1b[33m[System] Connecting to XTermL Bridge...\x1b[0m');
       
       const ws = new WebSocket('ws://127.0.0.1:3001');
       socketRef.current = ws;
 
       ws.onopen = () => {
         setIsConnected(true);
+        retryCount = 0; // Reset retries on success
         term.clear();
         term.writeln('\x1b[1;32mXTermL Bridge: Online\x1b[0m');
         
         if (distroId) {
-          term.writeln(`\x1b[1;34mLogging into ${selectedDistro}...\x1b[0m`);
-          // Small delay before login to let the remote shell (login) stabilize
+          term.writeln(`\x1b[1;34mLogging into ${selectedDistro} Environment...\x1b[0m`);
           setTimeout(() => {
             if (ws.readyState === WebSocket.OPEN) {
-              ws.send(`proot-distro login ${distroId}\r`);
+              // Using \n for better compatibility with different shells
+              ws.send(`proot-distro login ${distroId}\n`);
             }
-          }, 800);
+          }, 500);
         }
 
         onDataDisposable.current = term.onData(data => {
@@ -98,12 +119,15 @@ export default function TerminalPage() {
         setIsConnected(false);
         if (onDataDisposable.current) onDataDisposable.current.dispose();
         
-        term.writeln(`\r\n\x1b[31m[System] Connection Lost (Code: ${e.code}). Reconnecting...\x1b[0m`);
-        setTimeout(connectBridge, 3000);
+        if (e.code !== 1000 && e.code !== 1001) { // 1000 = Normal, 1001 = Going Away
+            retryCount++;
+            term.writeln(`\r\n\x1b[31m[System] Connection Lost (Attempt ${retryCount}/${MAX_RETRIES}). Retrying in 3s...\x1b[0m`);
+            setTimeout(connectBridge, 3000);
+        }
       };
 
       ws.onerror = (err) => {
-        console.error('WS Error:', err);
+        console.error('Terminal WS Error:', err);
         ws.close();
       };
     };

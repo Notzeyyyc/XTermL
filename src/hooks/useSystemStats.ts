@@ -11,6 +11,7 @@ export interface SystemStats {
   platform: 'android' | 'windows';
   isMock: boolean;
   isNative: boolean;
+  pid?: number;
 }
 
 /**
