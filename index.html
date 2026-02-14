@@ -1,0 +1,153 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>XTermLite</title>
+    <link rel="stylesheet" href="./styling/globals.css" />
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet" />
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+  </head>
+  <body class="bg-gradient-to-b from-white via-slate-50 to-white text-slate-900 antialiased">
+    <div class="min-h-screen">
+      <header class="max-w-6xl mx-auto px-6 py-6 flex items-center justify-between fade-up">
+        <div class="flex items-center gap-3">
+          <span class="material-icons text-lg text-slate-900">terminal</span>
+          <span class="font-semibold tracking-wide">XTermLite</span>
+        </div>
+        <nav class="hidden md:flex gap-8 text-sm text-slate-600">
+          <a class="hover:text-slate-900" href="./downloads.html">Downloads</a>
+          <a class="hover:text-slate-900" href="./plugins.html">Plugins</a>
+          <a class="hover:text-slate-900" href="./system-requirements.html">System Requirements</a>
+        </nav>
+        <button class="btn-material text-white px-5 py-2 rounded-full text-sm font-medium inline-flex items-center gap-2">
+          <span class="material-icons text-base">rocket_launch</span>
+          Get Started
+        </button>
+      </header>
+
+      <main class="max-w-6xl mx-auto px-6 pb-16">
+        <section class="grid md:grid-cols-2 gap-10 items-center py-12">
+          <div>
+            <p class="uppercase text-xs tracking-[0.35em] text-slate-400 fade-up delay-1">Termux tools · Arch PRoot UI</p>
+            <h1 class="text-4xl md:text-6xl font-semibold leading-tight mt-4 fade-up delay-2">
+              XTermLite
+            </h1>
+            <p class="mt-4 text-slate-600 text-lg fade-up delay-3">
+              A clean Arch PRoot experience inside Termux, optimized for mobile workflows.
+            </p>
+            <div class="mt-6 flex flex-col sm:flex-row gap-4 fade-up delay-4">
+              <a class="btn-material text-white px-6 py-3 rounded-full font-medium inline-flex items-center gap-2" href="./downloads.html">
+                <span class="material-icons text-base">download</span>
+                Download Tools
+              </a>
+              <a class="px-6 py-3 rounded-full border border-slate-300 text-slate-700 hover:border-slate-400 inline-flex items-center gap-2" href="./plugins.html">
+                <span class="material-icons text-base">extension</span>
+                Browse Plugins
+              </a>
+            </div>
+            <div class="mt-6 flex items-center gap-6 text-xs text-slate-500 fade-up delay-4">
+              <div class="flex items-center gap-2">
+                <span class="material-icons text-sm text-slate-500">auto_awesome</span>
+                <span>Minimal, focused UI</span>
+              </div>
+              <div class="flex items-center gap-2">
+                <span class="material-icons text-sm text-slate-500">bolt</span>
+                <span>Ready in minutes</span>
+              </div>
+            </div>
+          </div>
+          <div class="relative fade-up delay-3">
+            <div class="border border-slate-200 rounded-3xl p-8 bg-white shadow-[0_20px_60px_-40px_rgba(15,23,42,0.35)] float-slow transition hover:-translate-y-1 hover:shadow-[0_28px_80px_-50px_rgba(15,23,42,0.45)]">
+              <div class="flex items-center justify-between text-xs text-slate-500">
+                <span class="inline-flex items-center gap-2">
+                  <span class="material-icons text-sm">grid_view</span>
+                  XTermLite Panel
+                </span>
+                <span>v2.0</span>
+              </div>
+              <div class="mt-6 grid grid-cols-2 gap-4">
+                <div class="border border-slate-200 rounded-2xl p-4 bg-slate-50/70">
+                  <p class="text-xs text-slate-500">Shell</p>
+                  <p class="mt-2 text-2xl font-semibold">Oh My Zsh</p>
+                  <div class="mt-4 h-1.5 bg-slate-100 rounded-full overflow-hidden">
+                    <div class="h-full w-4/5 bg-slate-900"></div>
+                  </div>
+                </div>
+                <div class="border border-slate-200 rounded-2xl p-4 bg-slate-50/70">
+                  <p class="text-xs text-slate-500">Package Manager</p>
+                  <p class="mt-2 text-2xl font-semibold">Pacman</p>
+                  <div class="mt-4 flex gap-2">
+                    <span class="h-2 w-2 rounded-full bg-slate-900"></span>
+                    <span class="h-2 w-2 rounded-full bg-slate-300"></span>
+                    <span class="h-2 w-2 rounded-full bg-slate-300"></span>
+                  </div>
+                </div>
+              </div>
+              <div class="mt-6 border border-slate-200 rounded-2xl p-6 flex items-center justify-between bg-slate-50/70">
+                <div>
+                  <p class="text-xs text-slate-500">Mode</p>
+                  <p class="text-lg font-semibold mt-1">Arch PRoot</p>
+                </div>
+                <svg class="h-16 w-28 text-slate-900" viewBox="0 0 120 70" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M5 60 C25 30, 45 35, 65 18 C80 6, 98 10, 115 4" stroke="currentColor" stroke-width="2" />
+                  <circle cx="65" cy="18" r="4" fill="currentColor" />
+                  <circle cx="115" cy="4" r="3" fill="currentColor" />
+                </svg>
+              </div>
+              <div class="mt-6 flex justify-between text-xs text-slate-400">
+                <span>Bootstrap</span>
+                <span>Repo Sync</span>
+                <span>Theme</span>
+              </div>
+            </div>
+            <div class="absolute -top-6 -right-6 h-20 w-20 border border-slate-200 rounded-full pulse-soft"></div>
+            <div class="absolute -bottom-8 left-10 h-24 w-24 border border-slate-200 rounded-full pulse-soft delay-2"></div>
+            <div class="absolute -top-10 left-6 h-10 w-10 border border-slate-200 rounded-full orbit-slow"></div>
+          </div>
+        </section>
+        <section class="mt-14">
+          <div class="flex items-center justify-between mb-6">
+            <div>
+              <p class="uppercase text-xs tracking-[0.35em] text-slate-400 fade-up">Features</p>
+              <h2 class="text-2xl md:text-3xl font-semibold mt-2 fade-up delay-1">Built for multi-tasking on mobile.</h2>
+            </div>
+            <a class="hidden md:inline-flex items-center gap-2 text-sm text-slate-500 hover:text-slate-900 fade-up delay-2" href="./plugins.html">
+              <span>Explore plugins</span>
+              <span class="material-icons text-sm">arrow_forward</span>
+            </a>
+          </div>
+          <div class="grid md:grid-cols-3 gap-6">
+            <div class="border border-slate-200 rounded-2xl p-6 fade-up transition hover:-translate-y-1 hover:shadow-lg bg-white">
+            <div class="flex items-center gap-3">
+              <span class="material-icons text-lg text-slate-900">view_agenda</span>
+              <h3 class="font-semibold text-lg">tmux Multi-Window</h3>
+            </div>
+            <p class="mt-2 text-slate-600 text-sm">
+              Run parallel sessions with splits and fast switching.
+            </p>
+          </div>
+          <div class="border border-slate-200 rounded-2xl p-6 fade-up delay-1 transition hover:-translate-y-1 hover:shadow-lg bg-white">
+            <div class="flex items-center gap-3">
+              <span class="material-icons text-lg text-slate-900">smart_toy</span>
+              <h3 class="font-semibold text-lg">Integrated AI Agents</h3>
+            </div>
+            <p class="mt-2 text-slate-600 text-sm">
+              Smart helpers for commands, snippets, and automation.
+            </p>
+          </div>
+          <div class="border border-slate-200 rounded-2xl p-6 fade-up delay-2 transition hover:-translate-y-1 hover:shadow-lg bg-white">
+            <div class="flex items-center gap-3">
+              <span class="material-icons text-lg text-slate-900">dashboard_customize</span>
+              <h3 class="font-semibold text-lg">Window Manager Support</h3>
+            </div>
+            <p class="mt-2 text-slate-600 text-sm">
+              WM-style layouts for fast navigation and clean focus.
+            </p>
+          </div>
+          </div>
+        </section>
+      </main>
+    </div>
+  </body>
+  </html>

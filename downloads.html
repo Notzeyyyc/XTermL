@@ -1,0 +1,98 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>XTermLite Downloads</title>
+    <link rel="stylesheet" href="./styling/globals.css" />
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet" />
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+  </head>
+  <body class="bg-gradient-to-b from-white via-slate-50 to-white text-slate-900 antialiased">
+    <div class="min-h-screen">
+      <header class="max-w-6xl mx-auto px-6 py-6 flex items-center justify-between fade-up">
+        <a class="flex items-center gap-3" href="./index.html">
+          <span class="material-icons text-lg text-slate-900">terminal</span>
+          <span class="font-semibold tracking-wide">XTermLite</span>
+        </a>
+        <nav class="hidden md:flex gap-8 text-sm text-slate-600">
+          <a class="hover:text-slate-900" href="./downloads.html">Downloads</a>
+          <a class="hover:text-slate-900" href="./index.html">Home</a>
+          <a class="hover:text-slate-900" href="./plugins.html">Plugins</a>
+          <a class="hover:text-slate-900" href="./system-requirements.html">System Requirements</a>
+        </nav>
+        <a class="btn-material text-white px-5 py-2 rounded-full text-sm font-medium inline-flex items-center gap-2" href="./downloads.html">
+          <span class="material-icons text-base">download</span>
+          Downloads
+        </a>
+      </header>
+
+      <main class="max-w-6xl mx-auto px-6 pb-16">
+        <section class="py-8">
+          <p class="uppercase text-xs tracking-[0.35em] text-slate-400 fade-up">Downloads</p>
+          <h1 class="text-4xl md:text-5xl font-semibold leading-tight mt-4 fade-up delay-1">
+            Build Arch PRoot directly from Termux.
+          </h1>
+          <p class="mt-4 text-slate-600 text-lg fade-up delay-2">
+            Pick a channel that matches your workflow. Everything installs from Termux.
+          </p>
+        </section>
+
+        <section class="grid md:grid-cols-2 gap-6">
+          <div class="border border-slate-200 rounded-2xl p-6 fade-up bg-white transition hover:-translate-y-1 hover:shadow-lg">
+            <div class="flex items-center justify-between">
+              <h3 class="font-semibold text-lg inline-flex items-center gap-2">
+                <span class="material-icons text-base">verified</span>
+                Stable Channel
+              </h3>
+              <span class="text-xs text-slate-500">V2.0.0 (LTS)</span>
+            </div>
+            <p class="mt-2 text-sm text-slate-600">Optimized for daily use and stability.</p>
+            <div class="mt-4 flex flex-col sm:flex-row gap-3">
+              <div class="flex items-center gap-2 text-sm text-slate-500">
+                <span class="material-icons text-base">terminal</span>
+                <span>Clone + install script</span>
+              </div>
+            </div>
+            <div class="mt-4 space-y-2 text-xs text-slate-600">
+              <div class="bg-slate-50 border border-slate-200 rounded-lg p-3">git clone https://github.com/Notzeyyyc/XTermLite.git</div>
+              <div class="bg-slate-50 border border-slate-200 rounded-lg p-3">cd XTermLite</div>
+              <div class="bg-slate-50 border border-slate-200 rounded-lg p-3">chmod +x install.sh</div>
+              <div class="bg-slate-50 border border-slate-200 rounded-lg p-3">./install.sh</div>
+            </div>
+          </div>
+          <div class="border border-slate-200 rounded-2xl p-6 fade-up delay-1 bg-white transition hover:-translate-y-1 hover:shadow-lg">
+            <div class="flex items-center justify-between">
+              <h3 class="font-semibold text-lg inline-flex items-center gap-2">
+                <span class="material-icons text-base">science</span>
+                Beta Channel
+              </h3>
+              <span class="text-xs text-slate-500">V2.1.0 (Beta)</span>
+            </div>
+            <p class="mt-2 text-sm text-slate-600">Early access to upcoming features.</p>
+            <div class="mt-4 flex items-center gap-2 text-sm text-slate-500">
+              <span class="material-icons text-base">terminal</span>
+              <span>Clone beta branch</span>
+            </div>
+            <div class="mt-4 space-y-2 text-xs text-slate-600">
+              <div class="bg-slate-50 border border-slate-200 rounded-lg p-3">git clone -b beta https://github.com/Notzeyyyc/XTermLite.git</div>
+              <div class="bg-slate-50 border border-slate-200 rounded-lg p-3">cd XTermLite</div>
+              <div class="bg-slate-50 border border-slate-200 rounded-lg p-3">chmod +x install.sh</div>
+              <div class="bg-slate-50 border border-slate-200 rounded-lg p-3">./install.sh</div>
+            </div>
+          </div>
+        </section>
+
+        <section class="mt-10 border border-slate-200 rounded-2xl p-6 fade-up delay-2 bg-white">
+          <div class="flex items-center gap-2 text-sm text-slate-500">
+            <span class="material-icons text-base">terminal</span>
+            <span>Termux Prep</span>
+          </div>
+          <div class="mt-4 bg-slate-50 border border-slate-200 rounded-xl p-4 text-sm text-slate-700">
+            pkg update -y && pkg install git -y
+          </div>
+        </section>
+      </main>
+    </div>
+  </body>
+  </html>

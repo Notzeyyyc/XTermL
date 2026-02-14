@@ -1,0 +1,92 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>XTermLite Plugins</title>
+    <link rel="stylesheet" href="./styling/globals.css" />
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet" />
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+  </head>
+  <body class="bg-gradient-to-b from-white via-slate-50 to-white text-slate-900 antialiased">
+    <div class="min-h-screen">
+      <header class="max-w-6xl mx-auto px-6 py-6 flex items-center justify-between fade-up">
+        <a class="flex items-center gap-3" href="./index.html">
+          <span class="material-icons text-lg text-slate-900">terminal</span>
+          <span class="font-semibold tracking-wide">XTermLite</span>
+        </a>
+        <nav class="hidden md:flex gap-8 text-sm text-slate-600">
+          <a class="hover:text-slate-900" href="./downloads.html">Downloads</a>
+          <a class="hover:text-slate-900" href="./index.html">Home</a>
+          <a class="hover:text-slate-900" href="./plugins.html">Plugins</a>
+          <a class="hover:text-slate-900" href="./system-requirements.html">System Requirements</a>
+        </nav>
+        <a class="btn-material text-white px-5 py-2 rounded-full text-sm font-medium inline-flex items-center gap-2" href="./downloads.html">
+          <span class="material-icons text-base">download</span>
+          Get Tools
+        </a>
+      </header>
+
+      <main class="max-w-6xl mx-auto px-6 pb-16">
+        <section class="py-8">
+          <p class="uppercase text-xs tracking-[0.35em] text-slate-400 fade-up">Plugins</p>
+          <h1 class="text-4xl md:text-5xl font-semibold leading-tight mt-4 fade-up delay-1">
+            Extend your Arch PRoot workflow.
+          </h1>
+          <p class="mt-4 text-slate-600 text-lg fade-up delay-2">
+            Enable popular modules for shell, automation, and UI polish.
+          </p>
+        </section>
+
+        <section class="grid md:grid-cols-3 gap-6">
+          <div class="border border-slate-200 rounded-2xl p-6 fade-up bg-white transition hover:-translate-y-1 hover:shadow-lg">
+            <div class="flex items-center gap-3">
+              <span class="material-icons text-lg text-slate-900">terminal</span>
+              <h3 class="font-semibold text-lg">Shell Booster</h3>
+            </div>
+            <p class="mt-2 text-sm text-slate-600">Zsh presets, prompt themes, alias packs.</p>
+          </div>
+          <div class="border border-slate-200 rounded-2xl p-6 fade-up delay-1 bg-white transition hover:-translate-y-1 hover:shadow-lg">
+            <div class="flex items-center gap-3">
+              <span class="material-icons text-lg text-slate-900">smart_toy</span>
+              <h3 class="font-semibold text-lg">AI Agents</h3>
+            </div>
+            <p class="mt-2 text-sm text-slate-600">Auto commands, lookup, and troubleshooting.</p>
+          </div>
+          <div class="border border-slate-200 rounded-2xl p-6 fade-up delay-2 bg-white transition hover:-translate-y-1 hover:shadow-lg">
+            <div class="flex items-center gap-3">
+              <span class="material-icons text-lg text-slate-900">palette</span>
+              <h3 class="font-semibold text-lg">Theme Pack</h3>
+            </div>
+            <p class="mt-2 text-sm text-slate-600">Light/dark presets with Arch desktop vibes.</p>
+          </div>
+        </section>
+
+        <section class="mt-10 border border-slate-200 rounded-2xl p-6 fade-up delay-2 bg-white">
+          <div class="flex items-center gap-3">
+            <span class="material-icons text-lg text-slate-900">extension</span>
+            <h3 class="font-semibold text-lg">Featured Plugins</h3>
+          </div>
+          <div class="mt-4 grid md:grid-cols-2 gap-4 text-sm text-slate-600">
+            <div class="border border-slate-200 rounded-xl p-4 bg-slate-50/70">
+              <p class="font-semibold text-slate-900">tmux-layouts</p>
+              <p class="mt-1">Preset splits, session save, quick attach.</p>
+            </div>
+            <div class="border border-slate-200 rounded-xl p-4 bg-slate-50/70">
+              <p class="font-semibold text-slate-900">pacman-helper</p>
+              <p class="mt-1">Mirror sync, cleanup, update notifier.</p>
+            </div>
+            <div class="border border-slate-200 rounded-xl p-4 bg-slate-50/70">
+              <p class="font-semibold text-slate-900">wm-shortcuts</p>
+              <p class="mt-1">Fast keybindings for WM-style layouts.</p>
+            </div>
+            <div class="border border-slate-200 rounded-xl p-4 bg-slate-50/70">
+              <p class="font-semibold text-slate-900">ai-pair</p>
+              <p class="mt-1">Assistant for debugging and scripting.</p>
+            </div>
+          </div>
+        </section>
+      </main>
+    </div>
+  </body>
+  </html>
